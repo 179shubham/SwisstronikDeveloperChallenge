@@ -1,0 +1,47 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract VotingSystem {
+    address private owner;
+    mapping(address => bool) private voters;
+    mapping(bytes32 => uint256) private voteCounts;
+    bool public votingOpen;
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only the owner can perform this operation");
+        _;
+    }
+
+    modifier onlyVoter() {
+        require(voters[msg.sender], "Only registered voters can perform this operation");
+        _;
+    }
+
+    constructor() {
+        owner = msg.sender;
+        votingOpen = true;
+    }
+
+    function registerVoter(address _voterAddress) public onlyOwner {
+        require(!voters[_voterAddress], "Voter is already registered");
+        voters[_voterAddress] = true;
+    }
+
+    function openVoting() public onlyOwner {
+        votingOpen = true;
+    }
+
+    function closeVoting() public onlyOwner {
+        votingOpen = false;
+    }
+
+    function vote(bytes32 _candidate) public onlyVoter {
+        require(votingOpen, "Voting is closed");
+        voteCounts[_candidate]++;
+    }
+
+    function getVoteCount(bytes32 _candidate) public view returns (uint256) {
+        require(voters[msg.sender], "Only registered voters can check the vote count");
+        return voteCounts[_candidate];
+    }
+}
